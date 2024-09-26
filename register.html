@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Registration</title>
+    <link rel="stylesheet" href= "{{ url_for('static',filename='css/style.css') }}">
+    <script>
+        let keyEvents = [];
+        let scrollEvents = [];
+
+        function logKey(event) {
+            keyEvents.push({
+                'Event': event.type,
+                'Key': event.key,
+                'Epoch': event.timeStamp / 1000 // Convert to seconds
+            });
+        }
+
+        function logScroll(event) {
+            scrollEvents.push({
+                'Event': 'scroll',
+                'ScrollX': window.scrollX,
+                'ScrollY': window.scrollY,
+                'Epoch': event.timeStamp / 1000 // Convert to seconds
+            });
+        }
+
+        function sendRegistrationData() {
+            const fullname = document.getElementById('fname').value;
+            const address = document.getElementById('addr').value;
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const education = document.getElementById('edu').value;
+
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', '/register', true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 201) {
+                    window.location.href = '/messaging'; // Redirect to messaging page on successful registration
+                } else if (xhr.readyState === 4) {
+                    alert('Registration failed: ' + xhr.responseText);
+                }
+            };
+
+            const data = JSON.stringify({
+                'fname': fullname,
+                'address': address,
+                'username': username,
+                'password': password,
+                'education': education,
+                'key_events': keyEvents,
+                'scroll_events': scrollEvents
+            });
+            xhr.send(data);
+        }
+
+        function attachEventListeners() {
+            const inputFields = document.querySelectorAll('input[type="text"], input[type="password"]');
+            inputFields.forEach(field => {
+                field.addEventListener('keydown', logKey);
+                field.addEventListener('keyup', logKey);
+            });
+
+            window.addEventListener('scroll', logScroll);
+
+            document.getElementById('registerBtn').addEventListener('click', function (event) {
+                event.preventDefault();
+                sendRegistrationData();
+            });
+        }
+
+        window.onload = attachEventListeners;
+    </script>
+</head>
+<body>
+    <form id="registrationForm">
+        <label for="fname">Full Name:</label>
+        <input type="text" id="fname" name="fullname" required><br><br>
+
+        <label for="addr">Address:</label>
+        <input type="text" id="addr" name="address" required><br><br>
+
+        <label for="pnumber">Phone Number:</label>
+        <input type="text" id="pnumber" name="pnumber" required><br><br>
+
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required><br><br>
+        
+        <label for="edu">Education:</label>
+        <input type="text" id="edu" name="education" required><br><br>
+
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required><br><br>
+
+        <button id="registerBtn">Register</button>
+    </form>
+</body>
+</html>
+
